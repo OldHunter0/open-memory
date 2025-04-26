@@ -1,0 +1,5 @@
+/my_env
+.DS_Store
+.idea/
+uv.lock
+.env

@@ -1,0 +1,41 @@
+version: '3.8'
+services:
+  weaviate:
+    container_name: weaviate
+    image: semitechnologies/weaviate
+    environment:
+      ENABLE_MODULES: "text2vec-ollama"
+      OLLAMA_API_ENDPOINT: "http://ollama:11434"  # 使用服务名通信
+    networks:
+      - braindance_net  # 自定义网络
+    ports:
+      - "8080:8080"
+      - "50051:50051"
+
+  ollama:  # 确保服务名与配置一致
+    container_name: ollama
+    image: ollama/ollama:latest
+    networks:
+      - braindance_net
+    ports:
+      - "11434:11434"  # 只映射必要端口
+    volumes:
+      - ollama_data:/root/.ollama  # 持久化模型数据
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        /bin/ollama serve
+        pid=$!
+        sleep 5
+        echo "🔴 Retrieve mxbai-embed-large model..."
+        ollama pull mxbai-embed-large
+        echo "🟢 Done!"
+        wait $pid
+
+networks:
+  braindance_net:  # 定义统一网络
+    driver: bridge
+
+volumes:
+  ollama_data:  # 持久化存储

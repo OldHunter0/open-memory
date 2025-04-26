@@ -1,0 +1,22 @@
+// .vscode/launch.json
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch Web Server",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/run_braindance.py",
+            "args": ["--port", "5002", "--debug"],
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "FLASK_APP": "braindance_back/main.py",
+                "FLASK_ENV": "development",
+                "PYTHONPATH": "${workspaceFolder}",
+                "FLASK_RUN_PORT": "5002"
+            },
+            "justMyCode": false
+        }
+    ]
+}
