@@ -1,14 +1,18 @@
+import { getUserId } from './utils.js';
+
 // 扩展程序安装或更新时的处理
-chrome.runtime.onInstalled.addListener(function(details) {
+chrome.runtime.onInstalled.addListener(async function(details) {
   if (details.reason === 'install') {
     // 首次安装时的处理
     console.log('OpenMemory已安装');
     
     // 设置默认值
     chrome.storage.sync.set({
-      apiUrl: 'http://localhost:5000',
-      userId: ''
+      apiUrl: 'http://localhost:5000'
     });
+    
+    // 生成并保存userId，使用与前端一致的键名
+    await getUserId();
   } else if (details.reason === 'update') {
     // 更新时的处理
     console.log(`OpenMemory已更新到版本 ${chrome.runtime.getManifest().version}`);
@@ -68,6 +72,7 @@ chrome.action.onClicked.addListener(function(tab) {
   
   if (
     url.includes('chat.openai.com') || 
+    url.includes('chatgpt.com') ||
     url.includes('chat.deepseek.com') || 
     url.includes('chat.monica.im')
   ) {

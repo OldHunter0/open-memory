@@ -10,6 +10,7 @@
   ],
   "host_permissions": [
     "https://chat.openai.com/*",
+    "https://chatgpt.com/*",
     "https://chat.deepseek.com/*",
     "https://chat.monica.im/*"
   ],
@@ -30,6 +31,7 @@
     {
       "matches": [
         "https://chat.openai.com/*",
+        "https://chatgpt.com/*",
         "https://chat.deepseek.com/*",
         "https://chat.monica.im/*"
       ],
@@ -37,6 +39,7 @@
     }
   ],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   }
 } 
