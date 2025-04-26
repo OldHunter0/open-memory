@@ -73,14 +73,34 @@ function getCurrentTabInfo() {
 // 保存对话到API
 async function saveConversation() {
   try {
+    console.log("开始保存对话...");
+    
     const apiUrl = document.getElementById('apiUrl').value;
     if (!apiUrl) {
       showStatus('请输入API地址', false);
       return;
     }
+    console.log("API地址:", apiUrl);
     
-    // 自动获取userId，不需要用户输入
-    const userId = await getUserId();
+    // 检查对话数据是否存在
+    if (!window.conversationData || !window.conversationData.messages) {
+      showStatus('未获取到有效对话数据', false);
+      console.error("对话数据无效:", window.conversationData);
+      return;
+    }
+    console.log("对话数据:", window.conversationData);
+    
+    // 自动获取userId
+    let userId;
+    try {
+      userId = await getUserId();
+      console.log("获取到userId:", userId);
+    } catch (userIdError) {
+      console.error("获取userId失败:", userIdError);
+      // 出错时使用备用ID，不中断流程
+      userId = `fallback_user_${Date.now().toString(36)}`;
+      console.log("使用备用userId:", userId);
+    }
     
     // 准备请求数据
     const requestData = {
@@ -88,6 +108,8 @@ async function saveConversation() {
       messages: window.conversationData.messages,
       platform: window.conversationData.platform || 'unknown'
     };
+    
+    console.log("准备发送的数据:", requestData);
     
     // 发送请求到API端点
     const response = await fetch(`${apiUrl}/api/update_memory_from_chat`, {
@@ -98,15 +120,18 @@ async function saveConversation() {
       body: JSON.stringify(requestData)
     });
     
+    console.log("收到API响应:", response.status, response.statusText);
+    
     const data = await response.json();
+    console.log("响应数据:", data);
     
     if (data.status === 'success') {
       showStatus('对话已成功保存到记忆', true);
-      console.log(data.message); // 记录详细成功信息
     } else {
       showStatus(`保存失败: ${data.error || '未知错误'}`, false);
     }
   } catch (error) {
+    console.error("保存对话时出错:", error);
     showStatus(`API请求错误: ${error.message}`, false);
   }
 }
