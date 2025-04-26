@@ -26,7 +26,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 
 // 保存对话数据到API
 function saveConversationToAPI(data, callback) {
-  const { apiUrl, userId, messages } = data;
+  const { apiUrl, userId, messages, platform } = data;
   
   if (!apiUrl || !userId || !messages) {
     callback({success: false, error: '参数不完整'});
@@ -36,11 +36,12 @@ function saveConversationToAPI(data, callback) {
   // 准备请求数据
   const requestData = {
     user_id: userId,
-    messages: messages
+    messages: messages,
+    platform: platform || 'unknown'
   };
   
-  // 发送API请求
-  fetch(`${apiUrl}/api/save_episodic_memory`, {
+  // 发送API请求到新端点
+  fetch(`${apiUrl}/api/update_memory_from_chat`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -50,7 +51,7 @@ function saveConversationToAPI(data, callback) {
   .then(response => response.json())
   .then(data => {
     if (data.status === 'success') {
-      callback({success: true});
+      callback({success: true, message: data.message});
     } else {
       callback({success: false, error: data.error || '未知错误'});
     }

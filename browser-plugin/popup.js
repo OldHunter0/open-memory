@@ -100,11 +100,12 @@ function saveConversation() {
   // 准备请求数据
   const requestData = {
     user_id: userId,
-    messages: window.conversationData.messages
+    messages: window.conversationData.messages,
+    platform: window.conversationData.platform || 'unknown'
   };
   
-  // 发送请求到API
-  fetch(`${apiUrl}/api/save_episodic_memory`, {
+  // 发送请求到新的API端点
+  fetch(`${apiUrl}/api/update_memory_from_chat`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -115,6 +116,7 @@ function saveConversation() {
   .then(data => {
     if (data.status === 'success') {
       showStatus('对话已成功保存到记忆', true);
+      console.log(data.message); // 记录详细成功信息
     } else {
       showStatus(`保存失败: ${data.error || '未知错误'}`, false);
     }
