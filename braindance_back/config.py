@@ -2,7 +2,7 @@
 import os
 import weaviate
 from openai import OpenAI
-from mem0 import Memory
+#from mem0 import Memory
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from os import getenv
 from weaviate.classes.config import Property, DataType, Configure
@@ -97,9 +97,9 @@ def get_user_config(user_id="default_user"):
     return user_config
 
 # 获取用户特定的内存实例
-def get_user_memory(user_id="default_user"):
-    user_config = get_user_config(user_id)
-    return Memory.from_config(user_config)
+# def get_user_memory(user_id="default_user"):
+#     user_config = get_user_config(user_id)
+#     return Memory.from_config(user_config)
 
 
 def get_user_what_worked(user_id="default_user"):
@@ -111,7 +111,7 @@ def get_user_what_to_avoid(user_id="default_user"):
     return user_config["vector_store"]["config"]["what_to_avoid"]
 
 # 默认内存对象
-memory = Memory.from_config(config)
+# memory = Memory.from_config(config)
 
 
 payload_schema = {

@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import traceback
-from .config import get_user_memory, openai_client, llm, global_memory
+from .config import openai_client, llm, global_memory
 import logging
 from flask import Response, stream_with_context
 import json
@@ -101,78 +101,78 @@ def import_memory():
 #                 print(f"Failed to delete temporary file: {str(e)}")
 
 
-@app.route('/api/chat', methods=['POST'])
-def chat():
-    """Handle chat requests and return AI responses in a streaming manner"""
-    try:
-        # Get request data
-        data = request.json
-        if not data or 'message' not in data:
-            return jsonify({"error": "Message cannot be empty"}), 400
+# @app.route('/api/chat', methods=['POST'])
+# def chat():
+#     """Handle chat requests and return AI responses in a streaming manner"""
+#     try:
+#         # Get request data
+#         data = request.json
+#         if not data or 'message' not in data:
+#             return jsonify({"error": "Message cannot be empty"}), 400
 
-        message = data['message']
-        user_id = data.get('user_id', 'default_user')
+#         message = data['message']
+#         user_id = data.get('user_id', 'default_user')
 
-        print(f"Received chat message from user {user_id}: {message}")
+#         print(f"Received chat message from user {user_id}: {message}")
 
-        # Use a generator function for streaming response
-        def generate():
-            try:
-                # 为特定用户获取内存实例
-                user_memory = get_user_memory(user_id)
+#         # Use a generator function for streaming response
+#         def generate():
+#             try:
+#                 # 为特定用户获取内存实例
+#                 user_memory = get_user_memory(user_id)
 
-                # 获取相关内存
-                relevant_memories = user_memory.search(query=message, user_id=user_id, limit=10)
-                memories_str = "\n".join(f"- {entry['memory']}" for entry in relevant_memories["results"])
+#                 # 获取相关内存
+#                 relevant_memories = user_memory.search(query=message, user_id=user_id, limit=10)
+#                 memories_str = "\n".join(f"- {entry['memory']}" for entry in relevant_memories["results"])
 
-                # 生成助手响应
-                system_prompt = f"You are a helpful AI. Answer the question based on query and memories.\nUser Memories:\n{memories_str}"
-                messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": message}]
+#                 # 生成助手响应
+#                 system_prompt = f"You are a helpful AI. Answer the question based on query and memories.\nUser Memories:\n{memories_str}"
+#                 messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": message}]
 
-                # Use streaming output
-                stream = openai_client.chat.completions.create(
-                    model="deepseek-chat",
-                    messages=messages,
-                    stream=True
-                )
+#                 # Use streaming output
+#                 stream = openai_client.chat.completions.create(
+#                     model="deepseek-chat",
+#                     messages=messages,
+#                     stream=True
+#                 )
 
-                # Collect the complete response for storage
-                assistant_response = ""
+#                 # Collect the complete response for storage
+#                 assistant_response = ""
 
-                for chunk in stream:
-                    if hasattr(chunk.choices[0], 'delta') and hasattr(chunk.choices[0].delta, 'content'):
-                        content = chunk.choices[0].delta.content
-                        if content:
-                            # Send data in SSE format
-                            yield f"data: {json.dumps({'content': content})}\n\n"
-                            assistant_response += content
+#                 for chunk in stream:
+#                     if hasattr(chunk.choices[0], 'delta') and hasattr(chunk.choices[0].delta, 'content'):
+#                         content = chunk.choices[0].delta.content
+#                         if content:
+#                             # Send data in SSE format
+#                             yield f"data: {json.dumps({'content': content})}\n\n"
+#                             assistant_response += content
 
-                # Create new conversation memory
-                messages.append({"role": "assistant", "content": assistant_response})
-                user_memory.add(messages, user_id=user_id)
+#                 # Create new conversation memory
+#                 messages.append({"role": "assistant", "content": assistant_response})
+#                 user_memory.add(messages, user_id=user_id)
 
-                # Send end marker
-                yield f"data: {json.dumps({'done': True})}\n\n"
-            except Exception as e:
-                print(f"Error generating response: {str(e)}")
-                traceback.print_exc()
-                yield f"data: {json.dumps({'error': str(e)})}\n\n"
-                yield f"data: {json.dumps({'done': True})}\n\n"
+#                 # Send end marker
+#                 yield f"data: {json.dumps({'done': True})}\n\n"
+#             except Exception as e:
+#                 print(f"Error generating response: {str(e)}")
+#                 traceback.print_exc()
+#                 yield f"data: {json.dumps({'error': str(e)})}\n\n"
+#                 yield f"data: {json.dumps({'done': True})}\n\n"
 
-        return Response(stream_with_context(generate()),
-                        mimetype="text/event-stream",
-                        headers={"Cache-Control": "no-cache",
-                                 "X-Accel-Buffering": "no",
-                                 "Access-Control-Allow-Origin": "*"})
+#         return Response(stream_with_context(generate()),
+#                         mimetype="text/event-stream",
+#                         headers={"Cache-Control": "no-cache",
+#                                  "X-Accel-Buffering": "no",
+#                                  "Access-Control-Allow-Origin": "*"})
 
-    except Exception as e:
-        print(f"Error handling chat request: {str(e)}")
-        traceback.print_exc()
-        return jsonify({"error": str(e)}), 500
+#     except Exception as e:
+#         print(f"Error handling chat request: {str(e)}")
+#         traceback.print_exc()
+#         return jsonify({"error": str(e)}), 500
 
 
 # 增加工作记忆
-@app.route('/api/chatV2', methods=['POST'])
+@app.route('/api/chat', methods=['POST'])
 def chatV2():
     """Handle chat requests and return AI responses in a streaming manner"""
     try:
