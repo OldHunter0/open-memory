@@ -31,7 +31,7 @@ function getCurrentTabInfo() {
     const url = currentTab.url;
     let platform = '';
     
-    if (url.includes('chat.openai.com') || url.includes('chatgpt.com')) {
+    if (url.includes('chat.openai.com') || url.includes('chatgpt.com') || url.includes('oai.liuliangbang.vip')) {
       platform = 'ChatGPT';
     } else if (url.includes('chat.deepseek.com')) {
       platform = 'DeepSeek';

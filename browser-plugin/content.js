@@ -5,7 +5,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     let conversationData = null;
     
     // 根据不同的网站调用不同的提取方法
-    if (host.includes('chatgpt.com')) {
+    if (host.includes('chatgpt.com') || host.includes('oai.liuliangbang.vip')) {
       conversationData = extractChatGPT();
     } else if (host.includes('chat.deepseek.com')) {
       conversationData = extractDeepSeek();

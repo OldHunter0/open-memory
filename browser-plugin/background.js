@@ -65,7 +65,7 @@ function saveConversationToAPI(data, callback) {
   });
 }
 
-// 扩展图标点击事件（如果需要）
+// 扩展图标点击事件
 chrome.action.onClicked.addListener(function(tab) {
   // 检查是否在支持的网站上
   const url = tab.url || '';
@@ -73,6 +73,7 @@ chrome.action.onClicked.addListener(function(tab) {
   if (
     url.includes('chat.openai.com') || 
     url.includes('chatgpt.com') ||
+    url.includes('oai.liuliangbang.vip') ||
     url.includes('chat.deepseek.com') || 
     url.includes('chat.monica.im')
   ) {
