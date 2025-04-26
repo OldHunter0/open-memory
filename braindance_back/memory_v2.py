@@ -93,6 +93,9 @@ def format_conversation(messages):
 
     # Start from index 1 to skip the first system message
     for message in messages[1:]:
+        # 如果是字符串类型直接过滤
+        if isinstance(message, str):
+            continue
         conversation.append(f"{message.type.upper()}: {message.content}")
 
     # Join with newlines

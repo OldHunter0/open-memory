@@ -6,8 +6,8 @@ import logging
 from flask import Response, stream_with_context
 import json
 import os
-from langchain_core.messages import HumanMessage, SystemMessage
-from .memory_v2 import add_episodic_memory_v2
+from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
+from .memory_v2 import add_episodic_memory_v2, episodic_system_prompt
 from .memory_store import export_weaviate_snapshot
 
 # Set up logging
@@ -187,7 +187,7 @@ def chatV2():
         print(f"Received chat message from user {user_id}: {message}")
 
         # Generate new system prompt
-        # system_prompt_episodic = episodic_system_prompt(message, user_id)
+        system_prompt_episodic = episodic_system_prompt(message, user_id)
 
         conversation = global_memory.setdefault(user_id, [])
         max_history = 10  # 保留最近5轮对话（10条消息）
@@ -198,7 +198,7 @@ def chatV2():
 
         # 构建新的消息队列
         messages = [
-            # system_prompt_episodic,  # 最新系统提示
+            system_prompt_episodic,  # 最新系统提示
             f"You are a helpful AI. Answer the question based on query and memories.",
             *filtered_history,  # 保留的历史消息
             HumanMessage(content=message)  # 当前用户消息
@@ -217,7 +217,7 @@ def chatV2():
                 # 添加AI返回对话
                 global_memory[user_id].extend([
                     HumanMessage(content=message),
-                    response.content
+                    AIMessage(content=response.content)
                 ])
 
                 for i, msg in enumerate(messages, start=0):
@@ -291,6 +291,41 @@ def delete_episodic_memory():
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/update_memory_from_chat', methods=['POST'])
+def update_memory_from_chat():
+    try:
+        data = request.json
+        user_id = data.get('user_id', 'default_user')
+        messages = data.get('messages', [])
+        platform = data.get('platform', 'default_platform')
+        
+        # 验证输入
+        if not messages:
+            return jsonify({"error": "messages cannot be empty"}), 400
+        if not platform:
+            return jsonify({"error": "platform cannot be empty"}), 400
+        if not user_id:
+            return jsonify({"error": "user_id cannot be empty"}), 400
+        
+        # 确保用户在global_memory中有一个列表
+        if user_id not in global_memory:
+            global_memory[user_id] = []
+            
+        # 处理消息
+        new_messages = []
+        for message in messages:
+            if message["role"] == 'user':
+                new_messages.append(HumanMessage(content=message["content"]))
+            elif message["role"] == 'assistant':
+                new_messages.append(AIMessage(content=message["content"]))
+        
+        # 添加新消息到用户的记忆中
+        global_memory[user_id].extend(new_messages)
+        add_episodic_memory_v2(global_memory[user_id], user_id)
+        return jsonify({"status": "success"})
+    except Exception as e:
+        logger.error(f"Save error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
 def run_api(host='localhost', port=5000, debug=False):
     """Run the API server"""
