@@ -1,5 +1,7 @@
 # Open Memory - AI Memory Platform
 
+English | [中文](./README_CN.md)
+
 ## Product Overview
 
 ### Vision

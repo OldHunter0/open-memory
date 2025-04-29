@@ -1,5 +1,7 @@
 # Open Memory - AI记忆平台
 
+[English](./README.md) | 中文
+
 ## 产品概述
 
 ### 产品愿景
