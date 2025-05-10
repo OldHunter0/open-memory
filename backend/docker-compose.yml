@@ -1,0 +1,69 @@
+version: '3'
+
+services:
+  # 后端API服务
+  backend:
+    build: .
+    container_name: memory-backend
+    restart: always
+    ports:
+      - "5002:5002"
+    environment:
+      - FLASK_APP=app.py
+      - FLASK_ENV=production
+      - PORT=5002
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/memory
+      - SECRET_KEY=your-secret-key-here
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - WEAVIATE_HOST=weaviate
+    depends_on:
+      - postgres
+      - weaviate
+    volumes:
+      - ./:/app
+    networks:
+      - memory-network
+
+  # PostgreSQL数据库
+  postgres:
+    image: postgres:14
+    container_name: memory-postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=memory
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - memory-network
+
+  # Weaviate向量数据库
+  weaviate:
+    image: semitechnologies/weaviate:1.22.4
+    container_name: memory-weaviate
+    restart: always
+    ports:
+      - "8080:8080"
+      - "50051:50051"
+    environment:
+      - QUERY_DEFAULTS_LIMIT=20
+      - AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED=true
+      - PERSISTENCE_DATA_PATH=/var/lib/weaviate
+      - DEFAULT_VECTORIZER_MODULE=none
+      - ENABLE_MODULES=text2vec-openai
+      - OPENAI_APIKEY=${OPENAI_API_KEY}
+    volumes:
+      - weaviate-data:/var/lib/weaviate
+    networks:
+      - memory-network
+
+volumes:
+  postgres-data:
+  weaviate-data:
+
+networks:
+  memory-network:
+    driver: bridge
